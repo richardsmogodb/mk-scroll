@@ -1,3 +1,4 @@
+import ResizeObserver from 'resize-observer-polyfill';
 import { SCROLL_BAL_WIDTH } from './constants';
 import { assign, setStyle } from './utilities';
 
@@ -5,6 +6,7 @@ export default {
   render() {
     this.renderContainer();
     this.renderWrapper();
+    console.log(ResizeObserver);
   },
   renderContainer() {
     const STYLES = {
@@ -26,14 +28,14 @@ export default {
         paddingRight: SCROLL_BAL_WIDTH,
         height: 'inherit',
         overflowX: 'hidden',
-        wordBreak: 'break-all'
+        wordBreak: 'break-all',
       });
     } else {
       assign(STYLES, {
         height: this.container.offsetHeight + SCROLL_BAL_WIDTH,
         paddingBottom: SCROLL_BAL_WIDTH,
         overflowY: 'hidden',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
       });
     }
 
