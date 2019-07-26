@@ -180,6 +180,11 @@
           whiteSpace: 'nowrap'
         });
       }
+      // const STYLES = {
+      //   marginRight: -SCROLL_BAL_WIDTH,
+      //   overflow: 'scroll',
+      // };
+
       setStyle(this.wrapper, STYLES);
     },
   };

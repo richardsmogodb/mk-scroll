@@ -36,6 +36,7 @@ export default {
         whiteSpace: 'nowrap'
       });
     }
+
     setStyle(this.wrapper, STYLES);
   },
 };
