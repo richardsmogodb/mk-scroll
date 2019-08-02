@@ -1,44 +1,60 @@
-import ResizeObserver from 'resize-observer-polyfill';
-import { SCROLL_BAL_WIDTH } from './constants';
 import { assign, setStyle } from './utilities';
+import {
+  CONTAINER_STYLES,
+  TRACK_WIDTH,
+  TRACK_GUTTER,
+  TRACK_STYLES,
+  THUMB_STYLES,
+  WRAPPER_STYLES_MAP,
+} from './constants';
 
 export default {
   render() {
     this.renderContainer();
     this.renderWrapper();
-    console.log(ResizeObserver);
+    this.renderTrack();
+    this.renderThumb();
   },
   renderContainer() {
-    const STYLES = {
-      minWidth: this.options.containerMinWidth,
-      minHeight: this.options.containerMinHeight,
-      overflow: 'hidden',
-    };
-
-    setStyle(this.container, STYLES);
+    setStyle(this.container, CONTAINER_STYLES);
   },
   renderWrapper() {
-    const STYLES = {
-      boxSizing: 'border-box',
+    const {
+      direction,
+      container,
+      scrollBarWidth,
+      map: { size, offset, padding },
+    } = this;
+    const styles = {
+      [size]: container[offset] + scrollBarWidth,
+      [padding]: TRACK_WIDTH + TRACK_GUTTER * 2,
     };
 
-    if (this.isVertical) {
-      assign(STYLES, {
-        width: this.container.offsetWidth + SCROLL_BAL_WIDTH,
-        paddingRight: SCROLL_BAL_WIDTH,
-        height: 'inherit',
-        overflowX: 'hidden',
-        wordBreak: 'break-all',
-      });
-    } else {
-      assign(STYLES, {
-        height: this.container.offsetHeight + SCROLL_BAL_WIDTH,
-        paddingBottom: SCROLL_BAL_WIDTH,
-        overflowY: 'hidden',
-        whiteSpace: 'nowrap',
-      });
-    }
+    assign(styles, WRAPPER_STYLES_MAP[direction]);
+    setStyle(this.wrapper, styles);
+  },
+  renderTrack() {
+    this.track = document.createElement('div');
+    const { size, direction } = this.map;
+    const styles = {
+      [size]: TRACK_WIDTH,
+      [direction]: TRACK_GUTTER,
+    };
 
-    setStyle(this.wrapper, STYLES);
+    assign(styles, TRACK_STYLES);
+    setStyle(this.track, styles);
+    this.container && this.container.appendChild(this.track);
+  },
+  renderThumb() {
+    this.thumb = document.createElement('div');
+    const { size } = this.map;
+    const styles = {
+      [size]: '100%',
+    };
+
+    assign(styles, THUMB_STYLES);
+    setStyle(this.thumb, styles);
+    this.update();
+    this.track && this.track.appendChild(this.thumb);
   },
 };

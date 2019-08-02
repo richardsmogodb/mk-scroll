@@ -1,9 +1,9 @@
-import { REGEXP_SUFFIX } from './constants';
+import { IN_BROWSER, WINDOW, REGEXP_SUFFIX } from './constants';
 
 /**
  * Check if the given value is not a number.
  */
-export const isNaN = Number.isNaN || window.isNaN;
+export const isNaN = Number.isNaN || WINDOW.isNaN;
 
 /**
  * Check if the given value is a number.
@@ -177,4 +177,98 @@ export const addClass = (element, value) => {
   } else if (includes(className, value)) {
     element.className += ` ${value}`;
   }
+};
+
+const REGEXP_SPACES = /\s\s*/;
+const onceSupported = (() => {
+  let supported = false;
+
+  if (IN_BROWSER) {
+    let once = false;
+    const listener = () => {};
+    const options = Object.defineProperty({}, 'once', {
+      get() {
+        supported = true;
+        return once;
+      },
+      set(value) {
+        once = value;
+      },
+    });
+
+    WINDOW.addEventListener('test', listener, options);
+    WINDOW.removeEventListener('test', listener, options);
+  }
+
+  return supported;
+})();
+
+/**
+ * Add event listener to the target element.
+ * @param {Element} element - The event target.
+ * @param {string} type - The event type(s).
+ * @param {Function} listener - The event listener.
+ * @param {Object} options - The event options.
+ */
+export const addListener = (element, type, listener, options = {}) => {
+  let handler = listener;
+  const types = type.trim().split(REGEXP_SPACES);
+
+  forEach(types, event => {
+    if (options.once && !onceSupported) {
+      const { listeners = {} } = element;
+
+      handler = (...args) => {
+        delete listeners[event][listener];
+        element.removeEventListener(event, handler, options);
+        listener.apply(element, args);
+      };
+
+      if (!listeners[event]) {
+        listeners[event] = {};
+      }
+
+      if (listeners[event][listener]) {
+        element.removeEventListener(event, listeners[event][listener], options);
+      }
+
+      listeners[event][listener] = handler;
+      element.listeners = listeners;
+    }
+
+    element.addEventListener(event, handler, options);
+  });
+};
+
+/**
+ * Remove event listener from the target element.
+ * @param {Element} element - The event target.
+ * @param {string} type - The event type(s).
+ * @param {Function} listener - The event listener.
+ * @param {Object} options - The event options.
+ */
+export const removeListener = (element, type, listener, options = {}) => {
+  let handler = listener;
+  const types = type.trim().split(REGEXP_SPACES);
+
+  forEach(types, event => {
+    if (!onceSupported) {
+      const { listeners } = element;
+
+      if (listeners && listeners[event] && listeners[event][listener]) {
+        handler = listeners[event][listener];
+        delete listeners[event][listener];
+
+        if (Object.keys(listeners[event]).length === 0) {
+          delete listeners[event];
+        }
+
+        if (Object.keys(listeners).length === 0) {
+          delete element.listeners;
+        }
+      }
+    }
+
+    element.removeEventListener(event, handler, options);
+  });
 };
