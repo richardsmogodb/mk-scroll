@@ -40,7 +40,7 @@ export default {
   scrollToResize() {
     const scrollResize = this.wrapper[this.map.scrollSize];
     const distance = scrollResize - this.scrollSize;
-    
+
     this.scrollTo(distance);
     this.scrollSize = scrollResize;
   },
@@ -72,5 +72,12 @@ export default {
 
     setStyle(this.wrapper, styles);
     this.scrollable = true;
+  },
+  destroy() {
+    this.unbind();
+    this.off();
+    this.clean();
+
+    return this;
   },
 };

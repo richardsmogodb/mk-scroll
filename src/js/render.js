@@ -1,4 +1,4 @@
-import { assign, setStyle } from './utilities';
+import { assign, setStyle, forEach } from './utilities';
 import {
   CONTAINER_STYLES,
   TRACK_WIDTH,
@@ -56,5 +56,33 @@ export default {
     setStyle(this.thumb, styles);
     this.update();
     this.track && this.track.appendChild(this.thumb);
+  },
+  clean() {
+    this.cleanContainer();
+    this.cleanWrapper();
+    this.cleanTrack();
+  },
+  cleanContainer() {
+    forEach(CONTAINER_STYLES, (value, key) => {
+      setStyle(this.container, { [key]: null });
+    });
+  },
+  cleanWrapper() {
+    const {
+      direction,
+      map: { size, padding },
+    } = this;
+    const styles = {
+      [size]: null,
+      [padding]: null,
+    };
+
+    assign(styles, WRAPPER_STYLES_MAP[direction]);
+    forEach(styles, (value, key) => {
+      setStyle(this.wrapper, { [key]: null });
+    });
+  },
+  cleanTrack() {
+    this.container && this.track && this.container.removeChild(this.track);
   },
 };

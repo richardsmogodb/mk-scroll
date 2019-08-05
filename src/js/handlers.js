@@ -64,7 +64,9 @@ export default {
 
     if (this.flag && active) {
       this.flag = false;
-      callback.call(this, () => { this.flag = true; });
+      callback.call(this, () => {
+        this.flag = true;
+      });
     }
   },
   push(callback) {
@@ -72,11 +74,14 @@ export default {
       wrapper,
       map: { clientSize, scrollSize, scrollDirection },
     } = this;
-    const active = wrapper[scrollDirection] + wrapper[clientSize] === wrapper[scrollSize];
+    const active =
+      wrapper[scrollDirection] + wrapper[clientSize] === wrapper[scrollSize];
 
     if (this.flag && active) {
       this.flag = false;
-      callback.call(this, () => { this.flag = true; });
+      callback.call(this, () => {
+        this.flag = true;
+      });
     }
   },
 };

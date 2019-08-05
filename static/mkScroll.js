@@ -370,6 +370,34 @@
       this.update();
       this.track && this.track.appendChild(this.thumb);
     },
+    clean() {
+      this.cleanContainer();
+      this.cleanWrapper();
+      this.cleanTrack();
+    },
+    cleanContainer() {
+      forEach(CONTAINER_STYLES, (value, key) => {
+        setStyle(this.container, { [key]: null });
+      });
+    },
+    cleanWrapper() {
+      const {
+        direction,
+        map: { size, padding },
+      } = this;
+      const styles = {
+        [size]: null,
+        [padding]: null,
+      };
+
+      assign(styles, WRAPPER_STYLES_MAP[direction]);
+      forEach(styles, (value, key) => {
+        setStyle(this.wrapper, { [key]: null });
+      });
+    },
+    cleanTrack() {
+      this.container && this.track && this.container.removeChild(this.track);
+    },
   };
 
   const resize = entries => {
@@ -396,7 +424,11 @@
   const removeResizeListener = (element, fn) => {
     if (!Array.isArray(element[RESIZE_LISTENERS])) return;
 
-    element[RESIZE_LISTENERS].splice(element[RESIZE_LISTENERS].indexOf(fn), 1);
+    if (fn) {
+      element[RESIZE_LISTENERS].splice(element[RESIZE_LISTENERS].indexOf(fn), 1);
+    } else {
+      element[RESIZE_LISTENERS].splice(0);
+    }
 
     if (!element[RESIZE_LISTENERS].length) {
       element[RESIZE_OBSERVER].disconnect();
@@ -502,6 +534,9 @@
           removeListener(wrapper, EVENT_SCROLL, this.onPush);
           !autoResize && removeResizeListener(view, this.onUpdate);
         break;
+        case undefined:
+          removeResizeListener(view);
+        break;
       }
     },
   };
@@ -577,6 +612,13 @@
 
       setStyle(this.wrapper, styles);
       this.scrollable = true;
+    },
+    destroy() {
+      this.unbind();
+      this.off();
+      this.clean();
+
+      return this;
     },
   };
 

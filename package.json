@@ -4,17 +4,25 @@
   "description": "a scroll plugin for P.C.",
   "main": "index.js",
   "scripts": {
+    "build": "run-p build:*",
+    "build:css": "postcss src/index.scss -o dist/mkScroll.css --no-map",
     "build:js": "rollup -c",
-    "start": "npm-run-all -p watch:*",
+    "compress": "run-p compress:*",
+    "compress:css": "postcss dist/mkScroll.css -u cssnano -o dist/mkScroll.min.css --no-map",
+    "compress:js": "uglifyjs dist/mkScroll.js -o dist/mkScroll.min.js -c -m --comments /^!/",
+    "watch": "run-p watch:*",
     "watch:css": "postcss src/css/scroll.scss -o static/mkScroll.css -m -w",
     "watch:js": "rollup -i src/index.js -o static/mkScroll.js -n mkScroll -f umd -m -w",
-    "lint": "npm-run-all -p lint:*",
+    "lint": "run-p lint:*",
     "lint:css": "stylelint {src,static}/**/*.{css,scss,html} --fix",
     "lint:js": "eslint src/**/*.js --fix",
+    "clear": "del-cli dist",
+    "start": "npm run watch",
+    "release": "run-s clear lint build compress",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "LiCe",
-  "homepage": "https://LiCe.github.io/mk-scroll",
+  "author": "yuji",
+  "homepage": "https://github.com/richardsmogodb/mk-scroll",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.5.4",
@@ -22,6 +30,8 @@
     "babel-core": "^7.0.0-bridge.0",
     "change-case": "^3.1.0",
     "create-banner": "^1.0.0",
+    "cssnano": "^4.1.10",
+    "del-cli": "^2.0.0",
     "eslint": "^6.0.1",
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-prettier": "^3.1.0",
@@ -38,7 +48,8 @@
     "stylelint": "^10.1.0",
     "stylelint-config-prettier": "^5.2.0",
     "stylelint-config-recommended": "^2.2.0",
-    "stylelint-prettier": "^1.1.1"
+    "stylelint-prettier": "^1.1.1",
+    "uglify-js": "^3.6.0"
   },
   "dependencies": {
     "resize-observer-polyfill": "^1.5.1"
