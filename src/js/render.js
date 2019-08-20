@@ -21,12 +21,11 @@ export default {
   renderWrapper() {
     const {
       direction,
-      container,
       scrollBarWidth,
-      map: { size, offset, padding },
+      map: { size, padding },
     } = this;
     const styles = {
-      [size]: container[offset] + scrollBarWidth,
+      [size]: `calc(100% + ${scrollBarWidth}px)`,
       [padding]: TRACK_WIDTH + TRACK_GUTTER * 2,
     };
 
@@ -34,6 +33,8 @@ export default {
     setStyle(this.wrapper, styles);
   },
   renderTrack() {
+    if (!this.container) return;
+
     this.track = document.createElement('div');
     const { size, direction } = this.map;
     const styles = {
@@ -43,9 +44,11 @@ export default {
 
     assign(styles, TRACK_STYLES);
     setStyle(this.track, styles);
-    this.container && this.container.appendChild(this.track);
+    this.container.appendChild(this.track);
   },
   renderThumb() {
+    if (!this.track) return;
+
     this.thumb = document.createElement('div');
     const { size } = this.map;
     const styles = {
@@ -55,7 +58,7 @@ export default {
     assign(styles, THUMB_STYLES);
     setStyle(this.thumb, styles);
     this.update();
-    this.track && this.track.appendChild(this.thumb);
+    this.track.appendChild(this.thumb);
   },
   clean() {
     this.cleanContainer();

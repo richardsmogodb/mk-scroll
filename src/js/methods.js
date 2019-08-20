@@ -22,11 +22,15 @@ export default {
     });
   },
   scrollTo(distance) {
+    if (!this.wrapper) return;
+
     const isVertical = this.direction === VERTICAL;
     const x = isVertical ? 0 : distance;
     const y = isVertical ? distance : 0;
 
-    this.wrapper && this.wrapper.scrollTo(x, y);
+    this.wrapper.scrollTo
+      ? this.wrapper.scrollTo(x, y)
+      : (this.wrapper[this.map.scrollDirection] = distance);
   },
   scrollToMax() {
     const {
@@ -36,6 +40,8 @@ export default {
     const distance = wrapper[scrollSize] - wrapper[clientSize];
 
     this.scrollTo(distance);
+
+    return wrapper[scrollSize];
   },
   scrollToResize() {
     const scrollResize = this.wrapper[this.map.scrollSize];

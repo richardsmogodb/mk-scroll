@@ -121,6 +121,15 @@ export default {
     const { wrapper, view } = this;
 
     switch (event) {
+      case EVENT_SCROLL:
+        addListener(
+          wrapper,
+          EVENT_SCROLL,
+          (this.onScroll = this.scrolling.bind(this, callback))
+        );
+        !this.onUpdate &&
+          addResizeListener(view, (this.onUpdate = this.update.bind(this)));
+        break;
       case EVENT_UNSHIFT:
         this.scrollSize = this.wrapper[this.map.scrollSize];
 
@@ -157,6 +166,10 @@ export default {
     } = this;
 
     switch (event) {
+      case EVENT_SCROLL:
+        removeListener(wrapper, EVENT_SCROLL, this.onScroll);
+        !autoResize && removeResizeListener(view, this.onUpdate);
+        break;
       case EVENT_UNSHIFT:
         delete this.scrollSize;
 

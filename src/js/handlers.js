@@ -29,11 +29,12 @@ export default {
       scrollDirection,
       scrollSize,
     } = this.map;
+    const top = this.wrapper.getBoundingClientRect()[direction];
     const distance =
       event[client] - event.currentTarget.getBoundingClientRect()[direction];
     const mouseMoveDocument = _event => {
-      const percentage = (_event[client] - distance) / this.track[clientSize];
-
+      const percentage =
+        (_event[client] - top - distance) / this.track[clientSize];
       this.wrapper[scrollDirection] = this.wrapper[scrollSize] * percentage;
       this.scrollWrapper();
     };
@@ -58,6 +59,9 @@ export default {
   },
   mouseLeaveThumb() {
     setStyle(this.thumb, { backgroundColor: THUMB_NO_HOVER_COLOR });
+  },
+  scrolling(callback) {
+    callback.call(this, this.wrapper[this.map.scrollDirection]);
   },
   unshift(callback) {
     const active = !this.wrapper[this.map.scrollDirection];

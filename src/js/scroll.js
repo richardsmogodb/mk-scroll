@@ -20,7 +20,7 @@ class Scroll {
     }
 
     this.view = this.wrapper.children[0];
-    if (!this.wrapper) {
+    if (!this.view) {
       throw new Error('mkScroll wrapper require a child element at least.');
     }
 

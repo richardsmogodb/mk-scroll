@@ -1,10 +1,10 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
-const { pascalCase } = require('change-case');
+const { camelCase } = require('change-case');
 const createBanner = require('create-banner');
 const pkg = require('./package');
 
-const name = pascalCase(pkg.name.replace('js', ''));
+const name = camelCase(pkg.name.replace('js', ''));
 const banner = createBanner({
   data: {
     name: `${name}.js`,

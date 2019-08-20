@@ -5,7 +5,7 @@ export const VERTICAL = 'vertical';
 export const HORIZONTAL = 'horizontal';
 export const RESIZE_LISTENERS = '__resizeListeners__';
 export const RESIZE_OBSERVER = '__resizeObserver__';
-export const REGEXP_SUFFIX = /^(?:width|height|minWidth|minHeight|top|left|right|bottom|paddingRight|paddingBottom|borderRadius)$/;
+export const REGEXP_SUFFIX = /^(?:width|height|top|left|right|bottom|paddingRight|paddingBottom|borderRadius)$/;
 
 export const TRACK_WIDTH = 6;
 export const TRACK_GUTTER = 2;
@@ -26,8 +26,6 @@ export const EVENT_PUSH = 'push';
 
 export const CONTAINER_STYLES = {
   position: 'relative',
-  minWidth: 200,
-  minHeight: 200,
   overflow: 'hidden',
 };
 export const TRACK_STYLES = {
@@ -47,14 +45,16 @@ export const THUMB_STYLES = {
 };
 export const WRAPPER_STYLES_MAP = {
   [VERTICAL]: {
-    height: 'inherit',
-    overflow: 'hidden scroll',
+    height: '100%',
+    overflowY: 'scroll',
+    overflowX: 'hidden',
     wordBreak: 'break-all',
     boxSizing: 'border-box',
   },
   [HORIZONTAL]: {
-    width: 'inherit',
-    overflow: 'scroll hidden',
+    width: '100%',
+    overflowY: 'hidden',
+    overflowX: 'scroll',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
   },

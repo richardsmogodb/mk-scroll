@@ -1,6 +1,6 @@
 {
   "name": "mk-scroll",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "a scroll plugin for P.C.",
   "main": "index.js",
   "scripts": {

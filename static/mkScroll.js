@@ -55,13 +55,15 @@
   const WRAPPER_STYLES_MAP = {
     [VERTICAL]: {
       height: 'inherit',
-      overflow: 'hidden scroll',
+      overflowY: 'scroll',
+      overflowX: 'hidden',
       wordBreak: 'break-all',
       boxSizing: 'border-box',
     },
     [HORIZONTAL]: {
       width: 'inherit',
-      overflow: 'scroll hidden',
+      overflowY: 'hidden',
+      overflowX: 'scroll',
       whiteSpace: 'nowrap',
       boxSizing: 'border-box',
     },
@@ -334,12 +336,11 @@
     renderWrapper() {
       const {
         direction,
-        container,
         scrollBarWidth,
-        map: { size, offset, padding },
+        map: { size, padding },
       } = this;
       const styles = {
-        [size]: container[offset] + scrollBarWidth,
+        [size]: `calc(100% + ${scrollBarWidth}px)`,
         [padding]: TRACK_WIDTH + TRACK_GUTTER * 2,
       };
 
@@ -347,6 +348,8 @@
       setStyle(this.wrapper, styles);
     },
     renderTrack() {
+      if (!this.container) return;
+
       this.track = document.createElement('div');
       const { size, direction } = this.map;
       const styles = {
@@ -356,9 +359,11 @@
 
       assign(styles, TRACK_STYLES);
       setStyle(this.track, styles);
-      this.container && this.container.appendChild(this.track);
+      this.container.appendChild(this.track);
     },
     renderThumb() {
+      if (!this.track) return;
+
       this.thumb = document.createElement('div');
       const { size } = this.map;
       const styles = {
@@ -368,7 +373,7 @@
       assign(styles, THUMB_STYLES);
       setStyle(this.thumb, styles);
       this.update();
-      this.track && this.track.appendChild(this.thumb);
+      this.track.appendChild(this.thumb);
     },
     clean() {
       this.cleanContainer();
@@ -438,7 +443,13 @@
 
   var events = {
     bind() {
-      const { container, wrapper, view, thumb, options: { autoResize } } = this;
+      const {
+        container,
+        wrapper,
+        view,
+        thumb,
+        options: { autoResize },
+      } = this;
 
       this.scrollable = true;
 
@@ -472,12 +483,19 @@
         EVENT_MOUSEDOWN,
         (this.onMouseDownThumb = this.mouseDownThumb.bind(this))
       );
-      autoResize && addResizeListener(view, (this.onUpdate = this.update.bind(this)));
+      autoResize &&
+        addResizeListener(view, (this.onUpdate = this.update.bind(this)));
     },
     unbind() {
       delete this.scrollable;
 
-      const { container, wrapper, view, thumb, options: { autoResize } } = this;
+      const {
+        container,
+        wrapper,
+        view,
+        thumb,
+        options: { autoResize },
+      } = this;
 
       removeListener(wrapper, EVENT_SCROLL, this.onScrollWrapper);
       removeListener(container, EVENT_MOUSEENTER, this.onMouseEnterContainer);
@@ -491,11 +509,21 @@
       if (!isFunction(callback)) {
         throw new Error('callback must be a function');
       }
+
       this.flag = true;
 
       const { wrapper, view } = this;
 
-      switch(event) {
+      switch (event) {
+        case EVENT_SCROLL:
+          addListener(
+            wrapper,
+            EVENT_SCROLL,
+            (this.onScroll = this.scrolling.bind(this, callback))
+          );
+          !this.onUpdate &&
+            addResizeListener(view, (this.onUpdate = this.update.bind(this)));
+          break;
         case EVENT_UNSHIFT:
           this.scrollSize = this.wrapper[this.map.scrollSize];
 
@@ -504,39 +532,52 @@
             EVENT_SCROLL,
             (this.onUnshift = this.unshift.bind(this, callback))
           );
-          !this.onUpdate && addResizeListener(view, (this.onUpdate = this.update.bind(this)));
-          addResizeListener(view, (this.onScrollToResize = this.scrollToResize.bind(this)));
-        break;
+          !this.onUpdate &&
+            addResizeListener(view, (this.onUpdate = this.update.bind(this)));
+          addResizeListener(
+            view,
+            (this.onScrollToResize = this.scrollToResize.bind(this))
+          );
+          break;
         case EVENT_PUSH:
           addListener(
             wrapper,
             EVENT_SCROLL,
             (this.onPush = this.push.bind(this, callback))
           );
-          !this.onUpdate && addResizeListener(view, (this.onUpdate = this.update.bind(this)));
-        break;
+          !this.onUpdate &&
+            addResizeListener(view, (this.onUpdate = this.update.bind(this)));
+          break;
       }
     },
     off(event) {
       delete this.flag;
 
-      const { wrapper, view, options: { autoResize } } = this;
+      const {
+        wrapper,
+        view,
+        options: { autoResize },
+      } = this;
 
-      switch(event) {
+      switch (event) {
+        case EVENT_SCROLL:
+          removeListener(wrapper, EVENT_SCROLL, this.onScroll);
+          !autoResize && removeResizeListener(view, this.onUpdate);
+          break;
         case EVENT_UNSHIFT:
           delete this.scrollSize;
 
           removeListener(wrapper, EVENT_SCROLL, this.onUnshift);
           !autoResize && removeResizeListener(view, this.onUpdate);
           removeResizeListener(view, this.onScrollToResize);
-        break;
+          break;
         case EVENT_PUSH:
           removeListener(wrapper, EVENT_SCROLL, this.onPush);
           !autoResize && removeResizeListener(view, this.onUpdate);
-        break;
+          break;
         case undefined:
           removeResizeListener(view);
-        break;
+          break;
       }
     },
   };
@@ -562,11 +603,13 @@
       });
     },
     scrollTo(distance) {
+      if (!this.wrapper) return;
+
       const isVertical = this.direction === VERTICAL;
       const x = isVertical ? 0 : distance;
       const y = isVertical ? distance : 0;
 
-      this.wrapper && this.wrapper.scrollTo(x, y);
+      this.wrapper.scrollTo ? this.wrapper.scrollTo(x, y) : this.wrapper[this.map.scrollDirection] = distance;
     },
     scrollToMax() {
       const {
@@ -576,11 +619,13 @@
       const distance = wrapper[scrollSize] - wrapper[clientSize];
 
       this.scrollTo(distance);
+
+      return wrapper[scrollSize];
     },
     scrollToResize() {
       const scrollResize = this.wrapper[this.map.scrollSize];
       const distance = scrollResize - this.scrollSize;
-      
+
       this.scrollTo(distance);
       this.scrollSize = scrollResize;
     },
@@ -644,11 +689,12 @@
         scrollDirection,
         scrollSize,
       } = this.map;
+      const top = this.wrapper.getBoundingClientRect()[direction];
       const distance =
         event[client] - event.currentTarget.getBoundingClientRect()[direction];
       const mouseMoveDocument = _event => {
-        const percentage = (_event[client] - distance) / this.track[clientSize];
-
+        const percentage =
+          (_event[client] - top - distance) / this.track[clientSize];
         this.wrapper[scrollDirection] = this.wrapper[scrollSize] * percentage;
         this.scrollWrapper();
       };
@@ -674,12 +720,17 @@
     mouseLeaveThumb() {
       setStyle(this.thumb, { backgroundColor: THUMB_NO_HOVER_COLOR });
     },
+    scrolling(callback) {
+      callback.call(this, this.wrapper[this.map.scrollDirection]);
+    },
     unshift(callback) {
       const active = !this.wrapper[this.map.scrollDirection];
 
       if (this.flag && active) {
         this.flag = false;
-        callback.call(this, () => { this.flag = true; });
+        callback.call(this, () => {
+          this.flag = true;
+        });
       }
     },
     push(callback) {
@@ -687,11 +738,14 @@
         wrapper,
         map: { clientSize, scrollSize, scrollDirection },
       } = this;
-      const active = wrapper[scrollDirection] + wrapper[clientSize] === wrapper[scrollSize];
+      const active =
+        wrapper[scrollDirection] + wrapper[clientSize] === wrapper[scrollSize];
 
       if (this.flag && active) {
         this.flag = false;
-        callback.call(this, () => { this.flag = true; });
+        callback.call(this, () => {
+          this.flag = true;
+        });
       }
     },
   };
@@ -734,7 +788,7 @@
       if (!this.wrapper) {
         throw new Error('mkScroll container require a child element at least.');
       }
-      
+
       this.view = this.wrapper.children[0];
       if (!this.wrapper) {
         throw new Error('mkScroll wrapper require a child element at least.');
